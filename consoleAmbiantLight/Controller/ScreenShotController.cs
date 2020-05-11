@@ -1,5 +1,8 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace consoleAmbiantLight.Controller
@@ -21,48 +24,21 @@ namespace consoleAmbiantLight.Controller
             );
         }
 
-        private int FlattenRed(int red)
+        private Color findFirstTrueColor(List<KeyValuePair<Color, int>> list)
         {
-            if (red % 10 < 5)
-                return red - (red % 10);
-            if (red % 10 > 5)
-                return red + (10 - (red % 10));
-            return red;
-        }
-        
-        private int FlattenGreen(int green)
-        {
-            if (green % 10 < 5)
-                return green - (green% 10);
-            if (green % 10 > 5)
-                return green + (10 - (green % 10));
-            return green;
-        }
-        
-        private int FlattenBlue(int blue)
-        {
-            if (blue % 10 < 5)
-                return blue - (blue % 10);
-            if (blue % 10 > 5)
-                return blue + (10 - (blue % 10));
-            return blue;
+            foreach (KeyValuePair<Color, int> c in list)
+            {
+                if (c.Key.R < 170 || c.Key.B < 170 || c.Key.G < 170 &&
+                   (c.Key.R != c.Key.G || c.Key.G != c.Key.B))
+                    return c.Key;
+            }
+
+            return list[0].Key;
         }
 
-        private Color FlattenColor(Color color)
-        {
-            int R = FlattenRed(color.R);
-            int G = FlattenGreen(color.G);
-            int B = FlattenBlue(color.B);
-
-            return Color.FromArgb(R, G, B);
-        }
         public Color GetScreenAverageColor()
         {
-            int r = 0;
-            int g = 0;
-            int b = 0;
-
-            int total = 0;
+            Dictionary<Color, int> colorPalette = new Dictionary<Color, int>();
 
             for (int y = 0; y < screen.Height; y++)
             {
@@ -70,17 +46,14 @@ namespace consoleAmbiantLight.Controller
                 {
                     Color c = screen.GetPixel(x, y);
 
-                    r += c.R;
-                    g += c.G;
-                    b += c.B;
-                        
-                    total++;
+                    if (colorPalette.ContainsKey(c))
+                        colorPalette[c] += 1;
+                    else
+                        colorPalette.Add(c, 1);
                 }
             }
-            r /= total;
-            g /= total;
-            b /= total;
-            return FlattenColor(Color.FromArgb(r, g, b));
+            var list = colorPalette.OrderByDescending(k => k.Value).ToList();
+            return findFirstTrueColor(list);
         }
 
         private Bitmap screen;

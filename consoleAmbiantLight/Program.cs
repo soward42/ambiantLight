@@ -17,17 +17,11 @@ namespace consoleAmbiantLight
         {
             KeyboardController keyboard = new KeyboardController();
             IChroma ChromaInstance = await ColoreProvider.CreateNativeAsync();
-            Color tmp = new Color();
             while (true)
             {
                 ScreenShotController screen = new ScreenShotController();
-                Console.WriteLine("Tmp: " + tmp.ToString() + "\nScreen Color: " + screen.GetScreenAverageColor());
-                if (tmp != screen.GetScreenAverageColor())
-                {
-                    tmp = screen.GetScreenAverageColor();
-                    keyboard.changeKeyboardColor(screen.GetScreenAverageColor());
-                    keyboard.applyKeyboardColor(ChromaInstance);
-                }
+                keyboard.changeKeyboardColor(screen.GetScreenAverageColor());
+                keyboard.applyKeyboardColor(ChromaInstance);
             }
         }
     }
